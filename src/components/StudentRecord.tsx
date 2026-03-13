@@ -327,7 +327,7 @@ export function StudentRecord({ onBack }: StudentRecordProps) {
       const record: RecordEntry = {
         id: Date.now().toString(),
         studentId: selectedStudent,
-        category: selectedCategory as any,
+        category: selectedCategory as RecordEntry['category'],
         subcategory: '자동생성',
         content: newRecord.content,
         aiGenerated: true,
@@ -668,7 +668,7 @@ export function StudentRecord({ onBack }: StudentRecordProps) {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Select
                       value={newActivityLog.type}
-                      onValueChange={(value: any) => setNewActivityLog({ ...newActivityLog, type: value })}
+                      onValueChange={(value) => setNewActivityLog({ ...newActivityLog, type: value as ActivityLog['type'] })}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="활동 유형 선택" />

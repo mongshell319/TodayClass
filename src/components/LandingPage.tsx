@@ -110,6 +110,8 @@ export function LandingPage({ onNavigateToTeacherDashboard, onNavigateToSchoolQu
 
   // 비행기 메시지 시스템
   useEffect(() => {
+    const timeoutIds: ReturnType<typeof setTimeout>[] = [];
+
     const createFlyingMessage = () => {
       // 이미 비행기가 있다면 새로운 비행기를 생성하지 않음
       if (flyingMessages.length > 0) {
@@ -119,7 +121,7 @@ export function LandingPage({ onNavigateToTeacherDashboard, onNavigateToSchoolQu
       // 기본 응원 메시지와 사용자 메시지를 합쳐서 사용
       const allMessages = [...encouragementMessages, ...customMessages];
       const randomMessage = allMessages[Math.floor(Math.random() * allMessages.length)];
-      
+
       const newMessage = {
         id: messageIdCounter,
         message: randomMessage,
@@ -127,33 +129,36 @@ export function LandingPage({ onNavigateToTeacherDashboard, onNavigateToSchoolQu
         showMessage: false,
         author: customMessages.includes(randomMessage) ? '다른 선생님' : '익명의 선생님'
       };
-      
+
       setFlyingMessages([newMessage]);
       setMessageIdCounter(prev => prev + 1);
 
       // 메시지 자동 제거 (10초 후)
-      setTimeout(() => {
+      const removeId = setTimeout(() => {
         setFlyingMessages([]);
       }, 10000);
+      timeoutIds.push(removeId);
+    };
+
+    // 이후 15-25초 간격으로 랜덤하게 메시지 생성
+    const scheduleNext = () => {
+      const randomInterval = Math.random() * 10000 + 15000; // 15~25초
+      const id = setTimeout(() => {
+        createFlyingMessage();
+        scheduleNext();
+      }, randomInterval);
+      timeoutIds.push(id);
     };
 
     // 첫 번째 메시지는 5초 후 시작
-    const initialTimeout = setTimeout(createFlyingMessage, 5000);
-    
-    // 이후 15-25초 간격으로 랜덤하게 메시지 생성
-    const createRandomIntervals = () => {
-      const randomInterval = Math.random() * 10000 + 15000; // 15~25초
-      setTimeout(() => {
-        createFlyingMessage();
-        createRandomIntervals();
-      }, randomInterval);
-    };
-    
-    const intervalTimeout = setTimeout(createRandomIntervals, 5000);
+    const initialId = setTimeout(() => {
+      createFlyingMessage();
+      scheduleNext();
+    }, 5000);
+    timeoutIds.push(initialId);
 
     return () => {
-      clearTimeout(initialTimeout);
-      clearTimeout(intervalTimeout);
+      timeoutIds.forEach(clearTimeout);
     };
   }, [messageIdCounter, encouragementMessages, customMessages]);
 
