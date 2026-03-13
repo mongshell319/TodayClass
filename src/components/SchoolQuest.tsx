@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Logo } from './Logo';
 import { Button } from './ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
@@ -84,6 +84,21 @@ export function SchoolQuest({ onBack }: SchoolQuestProps) {
     return <StudyRaidView onBack={handleBackToMain} />;
   }
 
+  // 파티클 데이터를 useMemo로 고정 (매 렌더링마다 값이 바뀌는 문제 방지)
+  const particles = useMemo(() => {
+    const colors = ['bg-pink-400/40', 'bg-purple-400/40', 'bg-blue-400/40', 'bg-cyan-400/40', 'bg-yellow-400/40', 'bg-green-400/40'];
+    return Array.from({ length: 25 }, (_, i) => ({
+      id: i,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      x: Math.random() * 1200,
+      y: Math.random() * 800,
+      duration: Math.random() * 12 + 18,
+      delay: Math.random() * 10,
+      left: Math.random() * 100,
+      top: Math.random() * 100,
+    }));
+  }, []);
+
   // 메인 뷰 렌더링
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-900 via-purple-900 via-blue-900 to-cyan-900 relative overflow-hidden">
@@ -95,32 +110,28 @@ export function SchoolQuest({ onBack }: SchoolQuestProps) {
       </div>
 
       {/* 파티클 효과 */}
-      <div className="absolute inset-0 pointer-events-none">
-        {Array.from({ length: 25 }, (_, i) => {
-          const colors = ['bg-pink-400/40', 'bg-purple-400/40', 'bg-blue-400/40', 'bg-cyan-400/40', 'bg-yellow-400/40', 'bg-green-400/40'];
-          const randomColor = colors[Math.floor(Math.random() * colors.length)];
-          return (
-            <motion.div
-              key={i}
-              className={`absolute w-1 h-1 ${randomColor} rounded-full`}
-              animate={{
-                x: [0, Math.random() * 1200],
-                y: [0, Math.random() * 800],
-                opacity: [0, 1, 0],
-                scale: [0.5, 1.5, 0.5]
-              }}
-              transition={{
-                duration: Math.random() * 12 + 18,
-                repeat: Infinity,
-                delay: Math.random() * 10
-              }}
-              style={{
-                left: Math.random() * 100 + '%',
-                top: Math.random() * 100 + '%'
-              }}
-            />
-          );
-        })}
+      <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+        {particles.map((p) => (
+          <motion.div
+            key={p.id}
+            className={`absolute w-1 h-1 ${p.color} rounded-full`}
+            animate={{
+              x: [0, p.x],
+              y: [0, p.y],
+              opacity: [0, 1, 0],
+              scale: [0.5, 1.5, 0.5]
+            }}
+            transition={{
+              duration: p.duration,
+              repeat: Infinity,
+              delay: p.delay
+            }}
+            style={{
+              left: p.left + '%',
+              top: p.top + '%'
+            }}
+          />
+        ))}
       </div>
 
       {/* 상단 네비게이션 */}

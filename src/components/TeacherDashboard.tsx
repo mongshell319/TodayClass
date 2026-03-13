@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { loadFromStorage, saveToStorage } from './utils/storage';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
@@ -81,7 +82,7 @@ interface Student {
 
 export function TeacherDashboard({ onNavigateToSchoolQuest, onBack }: TeacherDashboardProps) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [todos, setTodos] = useState<TodoItem[]>([
+  const defaultTodos: TodoItem[] = [
     {
       id: '1',
       title: '성적 입력 마감',
@@ -118,7 +119,15 @@ export function TeacherDashboard({ onNavigateToSchoolQuest, onBack }: TeacherDas
       completed: false,
       category: '개인'
     }
-  ]);
+  ];
+  const [todos, setTodos] = useState<TodoItem[]>(() =>
+    loadFromStorage<TodoItem[]>('todayclass-todos', defaultTodos)
+  );
+
+  // localStorage 자동 저장
+  useEffect(() => { saveToStorage('todayclass-todos', todos); }, [todos]);
+  useEffect(() => { saveToStorage('todayclass-notes', notes); }, [notes]);
+  useEffect(() => { saveToStorage('todayclass-dashboard-students', students); }, [students]);
 
   // 달력에 일정 표시를 위한 효과
   useEffect(() => {
@@ -176,7 +185,7 @@ export function TeacherDashboard({ onNavigateToSchoolQuest, onBack }: TeacherDas
     return () => clearTimeout(timer);
   }, [todos, selectedDate]);
 
-  const [notes, setNotes] = useState<Note[]>([
+  const defaultNotes: Note[] = [
     {
       id: '1',
       title: '오늘의 학급 일지',
@@ -201,9 +210,12 @@ export function TeacherDashboard({ onNavigateToSchoolQuest, onBack }: TeacherDas
       lastModified: new Date(2024, 10, 1),
       tags: ['교육혁신', '게임화학습']
     }
-  ]);
+  ];
+  const [notes, setNotes] = useState<Note[]>(() =>
+    loadFromStorage<Note[]>('todayclass-notes', defaultNotes)
+  );
 
-  const [students, setStudents] = useState<Student[]>([
+  const defaultStudents: Student[] = [
     {
       id: '1',
       name: '김민수',
@@ -264,7 +276,10 @@ export function TeacherDashboard({ onNavigateToSchoolQuest, onBack }: TeacherDas
       notes: '예술적 재능이 뛰어남',
       avatar: undefined
     }
-  ]);
+  ];
+  const [students, setStudents] = useState<Student[]>(() =>
+    loadFromStorage<Student[]>('todayclass-dashboard-students', defaultStudents)
+  );
 
   const [newTodo, setNewTodo] = useState({
     title: '',

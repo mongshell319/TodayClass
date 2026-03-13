@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { loadFromStorage, saveToStorage } from './utils/storage';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
@@ -107,7 +108,7 @@ export function SchoolLife({ onBack }: SchoolLifeProps) {
   const [activeTab, setActiveTab] = useState('voting');
 
   // Voting System State
-  const [polls, setPolls] = useState<Poll[]>([
+  const defaultPolls: Poll[] = [
     {
       id: '1',
       title: '다음 주 체험학습 장소',
@@ -130,7 +131,10 @@ export function SchoolLife({ onBack }: SchoolLifeProps) {
       allowMultiple: true,
       anonymous: true
     }
-  ]);
+  ];
+  const [polls, setPolls] = useState<Poll[]>(() =>
+    loadFromStorage<Poll[]>('todayclass-polls', defaultPolls)
+  );
 
   const [newPoll, setNewPoll] = useState({
     title: '',
@@ -180,8 +184,8 @@ export function SchoolLife({ onBack }: SchoolLifeProps) {
     type: 'class' as 'class' | 'break' | 'activity' | 'exam'
   });
 
-  // Meeting Records State  
-  const [meetings, setMeetings] = useState<MeetingRecord[]>([
+  // Meeting Records State
+  const defaultMeetings: MeetingRecord[] = [
     {
       id: '1',
       title: '3학년 2반 11월 학급회의',
@@ -196,7 +200,10 @@ export function SchoolLife({ onBack }: SchoolLifeProps) {
       notes: '학생들의 적극적인 참여가 인상적이었음. 다음 회의에서는 성적 향상 방안도 논의 예정.',
       nextMeeting: new Date(2024, 10, 15)
     }
-  ]);
+  ];
+  const [meetings, setMeetings] = useState<MeetingRecord[]>(() =>
+    loadFromStorage<MeetingRecord[]>('todayclass-meetings', defaultMeetings)
+  );
 
   const [newMeeting, setNewMeeting] = useState({
     title: '',
@@ -206,7 +213,7 @@ export function SchoolLife({ onBack }: SchoolLifeProps) {
   });
 
   // Group Formation State
-  const [students, setStudents] = useState<Student[]>([
+  const defaultStudents: Student[] = [
     { id: '1', name: '김민수', gender: '남', ability: 'high', personality: 'leader', friends: ['박지영'], avoid: [] },
     { id: '2', name: '박지영', gender: '여', ability: 'high', personality: 'active', friends: ['김민수'], avoid: [] },
     { id: '3', name: '이철수', gender: '남', ability: 'medium', personality: 'quiet', friends: [], avoid: ['최영희'] },
@@ -219,9 +226,14 @@ export function SchoolLife({ onBack }: SchoolLifeProps) {
     { id: '10', name: '조민준', gender: '남', ability: 'medium', personality: 'active', friends: [], avoid: [] },
     { id: '11', name: '신예린', gender: '여', ability: 'low', personality: 'helper', friends: [], avoid: [] },
     { id: '12', name: '오준혁', gender: '남', ability: 'medium', personality: 'leader', friends: [], avoid: [] }
-  ]);
+  ];
+  const [students, setStudents] = useState<Student[]>(() =>
+    loadFromStorage<Student[]>('todayclass-schoollife-students', defaultStudents)
+  );
 
-  const [groups, setGroups] = useState<Group[]>([]);
+  const [groups, setGroups] = useState<Group[]>(() =>
+    loadFromStorage<Group[]>('todayclass-groups', [])
+  );
   const [groupSettings, setGroupSettings] = useState({
     groupSize: 4,
     genderBalance: true,
@@ -244,6 +256,12 @@ export function SchoolLife({ onBack }: SchoolLifeProps) {
   });
   
   const [isAddingStudent, setIsAddingStudent] = useState(false);
+
+  // localStorage 자동 저장
+  useEffect(() => { saveToStorage('todayclass-polls', polls); }, [polls]);
+  useEffect(() => { saveToStorage('todayclass-meetings', meetings); }, [meetings]);
+  useEffect(() => { saveToStorage('todayclass-schoollife-students', students); }, [students]);
+  useEffect(() => { saveToStorage('todayclass-groups', groups); }, [groups]);
 
   // Timer Effects
   useEffect(() => {
