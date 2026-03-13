@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { loadFromStorage, saveToStorage } from './utils/storage';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
@@ -198,7 +199,7 @@ export function StudentRecord({ onBack }: StudentRecordProps) {
   ];
 
   // Sample Records
-  const [records, setRecords] = useState<RecordEntry[]>([
+  const defaultRecords: RecordEntry[] = [
     {
       id: '1',
       studentId: '1',
@@ -215,7 +216,10 @@ export function StudentRecord({ onBack }: StudentRecordProps) {
       semester: '1학기',
       year: 2024
     }
-  ]);
+  ];
+  const [records, setRecords] = useState<RecordEntry[]>(() =>
+    loadFromStorage<RecordEntry[]>('todayclass-records', defaultRecords)
+  );
 
   const [newRecord, setNewRecord] = useState({
     content: '',
@@ -232,7 +236,7 @@ export function StudentRecord({ onBack }: StudentRecordProps) {
     tags: ''
   });
 
-  const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([
+  const defaultActivityLogs: ActivityLog[] = [
     {
       id: '1',
       studentId: '1',
@@ -270,7 +274,14 @@ export function StudentRecord({ onBack }: StudentRecordProps) {
       description: '\'코스모스\' 독서 후 감상문 작성 및 발표',
       tags: ['독서', '과학', '표현력']
     }
-  ]);
+  ];
+  const [activityLogs, setActivityLogs] = useState<ActivityLog[]>(() =>
+    loadFromStorage<ActivityLog[]>('todayclass-activity-logs', defaultActivityLogs)
+  );
+
+  // localStorage 자동 저장
+  useEffect(() => { saveToStorage('todayclass-records', records); }, [records]);
+  useEffect(() => { saveToStorage('todayclass-activity-logs', activityLogs); }, [activityLogs]);
 
   // AI Generation Functions
   const generateWithAI = async (templateId?: string) => {
