@@ -508,8 +508,17 @@ export function SchoolLife({ onBack }: SchoolLifeProps) {
       조원: group.members.map(m => m.name).join(', ')
     }));
     
-    console.log('조 편성 결과:', groupData);
-    // Here you could implement actual export functionality
+    const csv = [
+      '조명,조장,조원',
+      ...groupData.map(g => `${g.조명},${g.조장 ?? ''},${g.조원}`)
+    ].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = '조_편성_결과.csv';
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   // Helper Functions
@@ -824,7 +833,7 @@ export function SchoolLife({ onBack }: SchoolLifeProps) {
                   
                   <Select
                     value={newTimer.type}
-                    onValueChange={(value: any) => setNewTimer({ ...newTimer, type: value })}
+                    onValueChange={(value: 'class' | 'break' | 'activity' | 'exam') => setNewTimer({ ...newTimer, type: value })}
                   >
                     <SelectTrigger>
                       <SelectValue />

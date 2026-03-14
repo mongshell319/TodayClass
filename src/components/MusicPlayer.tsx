@@ -1,4 +1,35 @@
 import { useState, useRef, useEffect } from 'react';
+
+// YouTube IFrame API type declarations
+declare global {
+  interface Window {
+    YT: {
+      Player: new (elementId: string, options: YTPlayerOptions) => YTPlayer;
+      PlayerState: { ENDED: number; PLAYING: number; PAUSED: number };
+    };
+    onYouTubeIframeAPIReady: () => void;
+  }
+}
+
+interface YTPlayerOptions {
+  height: string;
+  width: string;
+  videoId: string;
+  playerVars?: Record<string, number>;
+  events?: {
+    onReady?: () => void;
+    onStateChange?: (event: { data: number }) => void;
+    onError?: (event: { data: number }) => void;
+  };
+}
+
+interface YTPlayer {
+  playVideo: () => void;
+  pauseVideo: () => void;
+  mute: () => void;
+  unMute: () => void;
+  destroy: () => void;
+}
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { 
@@ -67,7 +98,8 @@ export function MusicPlayer() {
   const [isMuted, setIsMuted] = useState(false);
   const [isPlayerReady, setIsPlayerReady] = useState(false);
   const [showPlayer, setShowPlayer] = useState(false);
-  const playerRef = useRef<any>(null);
+  const playerRef = useRef<YTPlayer | null>(null);
+  const [playerError, setPlayerError] = useState<string | null>(null);
 
   const currentTrack = musicTracks[currentTrackIndex];
 
@@ -79,7 +111,7 @@ export function MusicPlayer() {
     firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
 
     // YouTube API 준비 완료 콜백
-    (window as any).onYouTubeIframeAPIReady = () => {
+    window.onYouTubeIframeAPIReady = () => {
       setIsPlayerReady(true);
     };
 
@@ -101,30 +133,38 @@ export function MusicPlayer() {
       playerRef.current.destroy();
     }
 
-    playerRef.current = new (window as any).YT.Player('youtube-player', {
-      height: '0',
-      width: '0',
-      videoId: currentTrack.youtubeId,
-      playerVars: {
-        autoplay: 0,
-        controls: 0,
-        disablekb: 1,
-        fs: 0,
-        modestbranding: 1,
-        rel: 0,
-        showinfo: 0
-      },
-      events: {
-        onReady: () => {
-          console.log('YouTube player ready');
+    try {
+      playerRef.current = new window.YT.Player('youtube-player', {
+        height: '0',
+        width: '0',
+        videoId: currentTrack.youtubeId,
+        playerVars: {
+          autoplay: 0,
+          controls: 0,
+          disablekb: 1,
+          fs: 0,
+          modestbranding: 1,
+          rel: 0,
+          showinfo: 0
         },
-        onStateChange: (event: any) => {
-          if (event.data === (window as any).YT.PlayerState.ENDED) {
-            nextTrack();
+        events: {
+          onReady: () => {
+            setPlayerError(null);
+          },
+          onStateChange: (event: { data: number }) => {
+            if (event.data === window.YT.PlayerState.ENDED) {
+              nextTrack();
+            }
+          },
+          onError: () => {
+            setPlayerError('음악을 불러올 수 없습니다. 다른 트랙을 선택해주세요.');
+            setIsPlaying(false);
           }
         }
-      }
-    });
+      });
+    } catch {
+      setPlayerError('YouTube 플레이어를 초기화할 수 없습니다.');
+    }
   };
 
   const togglePlay = () => {
@@ -226,7 +266,14 @@ export function MusicPlayer() {
         <CardContent className="p-6">
           {/* Hidden YouTube Player */}
           <div id="youtube-player" style={{ display: 'none' }}></div>
-          
+
+          {/* Error Banner */}
+          {playerError && (
+            <div className="mb-4 px-4 py-2 rounded-lg bg-red-500/20 border border-red-400/30 text-red-200 text-sm text-center">
+              {playerError}
+            </div>
+          )}
+
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">

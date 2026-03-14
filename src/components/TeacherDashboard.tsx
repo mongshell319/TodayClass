@@ -176,6 +176,13 @@ export function TeacherDashboard({ onNavigateToSchoolQuest, onBack }: TeacherDas
     return () => clearTimeout(timer);
   }, [todos, selectedDate]);
 
+  // Clean up DOM indicators on unmount
+  useEffect(() => {
+    return () => {
+      document.querySelectorAll('.date-indicator').forEach(el => el.remove());
+    };
+  }, []);
+
   const [notes, setNotes] = useState<Note[]>([
     {
       id: '1',
@@ -634,7 +641,7 @@ export function TeacherDashboard({ onNavigateToSchoolQuest, onBack }: TeacherDas
                     />
                     <Select
                       value={newTodo.category}
-                      onValueChange={(value: any) => setNewTodo({ ...newTodo, category: value })}
+                      onValueChange={(value) => setNewTodo({ ...newTodo, category: value as TodoItem['category'] })}
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -656,7 +663,7 @@ export function TeacherDashboard({ onNavigateToSchoolQuest, onBack }: TeacherDas
                   <div className="flex items-center gap-4">
                     <Select
                       value={newTodo.priority}
-                      onValueChange={(value: any) => setNewTodo({ ...newTodo, priority: value })}
+                      onValueChange={(value) => setNewTodo({ ...newTodo, priority: value as TodoItem['priority'] })}
                     >
                       <SelectTrigger className="w-32">
                         <SelectValue />
@@ -1072,7 +1079,7 @@ export function TeacherDashboard({ onNavigateToSchoolQuest, onBack }: TeacherDas
                     <label className="text-sm font-medium">상담 유형</label>
                     <Select
                       value={counselingRecord.type}
-                      onValueChange={(value) => setCounselingRecord({ ...counselingRecord, type: value as any })}
+                      onValueChange={(value) => setCounselingRecord({ ...counselingRecord, type: value as typeof counselingRecord.type })}
                     >
                       <SelectTrigger>
                         <SelectValue />

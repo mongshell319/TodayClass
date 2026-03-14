@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
@@ -98,6 +98,13 @@ interface AITemplate {
 export function StudentRecord({ onBack }: StudentRecordProps) {
   const [selectedStudent, setSelectedStudent] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('행동특성');
+  const aiTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (aiTimerRef.current) clearTimeout(aiTimerRef.current);
+    };
+  }, []);
 
   // Sample Students
   const students: Student[] = [
@@ -277,7 +284,7 @@ export function StudentRecord({ onBack }: StudentRecordProps) {
     setNewRecord({ ...newRecord, isGenerating: true });
     
     // Simulate AI generation
-    setTimeout(() => {
+    aiTimerRef.current = setTimeout(() => {
       const template = templateId ? aiTemplates.find(t => t.id === templateId) : null;
       const studentName = students.find(s => s.id === selectedStudent)?.name || '학생';
       const studentLogs = activityLogs.filter(log => log.studentId === selectedStudent);
@@ -327,7 +334,7 @@ export function StudentRecord({ onBack }: StudentRecordProps) {
       const record: RecordEntry = {
         id: Date.now().toString(),
         studentId: selectedStudent,
-        category: selectedCategory as any,
+        category: selectedCategory as RecordEntry['category'],
         subcategory: '자동생성',
         content: newRecord.content,
         aiGenerated: true,
@@ -668,7 +675,7 @@ export function StudentRecord({ onBack }: StudentRecordProps) {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Select
                       value={newActivityLog.type}
-                      onValueChange={(value: any) => setNewActivityLog({ ...newActivityLog, type: value })}
+                      onValueChange={(value) => setNewActivityLog({ ...newActivityLog, type: value as ActivityLog['type'] })}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="활동 유형 선택" />
