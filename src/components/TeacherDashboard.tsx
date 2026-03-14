@@ -176,6 +176,13 @@ export function TeacherDashboard({ onNavigateToSchoolQuest, onBack }: TeacherDas
     return () => clearTimeout(timer);
   }, [todos, selectedDate]);
 
+  // Clean up DOM indicators on unmount
+  useEffect(() => {
+    return () => {
+      document.querySelectorAll('.date-indicator').forEach(el => el.remove());
+    };
+  }, []);
+
   const [notes, setNotes] = useState<Note[]>([
     {
       id: '1',

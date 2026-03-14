@@ -42,6 +42,13 @@ export function AIAssistant({ isOpen, onClose }: AIAssistantProps) {
   const [newMessage, setNewMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+    };
+  }, []);
 
   const aiInsights: AIInsight[] = [
     {
@@ -101,7 +108,7 @@ export function AIAssistant({ isOpen, onClose }: AIAssistantProps) {
     setIsTyping(true);
 
     // AI 응답 시뮬레이션
-    setTimeout(() => {
+    typingTimerRef.current = setTimeout(() => {
       const aiResponse = generateAIResponse(newMessage);
       setMessages(prev => [...prev, aiResponse]);
       setIsTyping(false);

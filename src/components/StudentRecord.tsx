@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
@@ -98,6 +98,13 @@ interface AITemplate {
 export function StudentRecord({ onBack }: StudentRecordProps) {
   const [selectedStudent, setSelectedStudent] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('행동특성');
+  const aiTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (aiTimerRef.current) clearTimeout(aiTimerRef.current);
+    };
+  }, []);
 
   // Sample Students
   const students: Student[] = [
@@ -277,7 +284,7 @@ export function StudentRecord({ onBack }: StudentRecordProps) {
     setNewRecord({ ...newRecord, isGenerating: true });
     
     // Simulate AI generation
-    setTimeout(() => {
+    aiTimerRef.current = setTimeout(() => {
       const template = templateId ? aiTemplates.find(t => t.id === templateId) : null;
       const studentName = students.find(s => s.id === selectedStudent)?.name || '학생';
       const studentLogs = activityLogs.filter(log => log.studentId === selectedStudent);

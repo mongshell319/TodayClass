@@ -833,7 +833,7 @@ export function SchoolLife({ onBack }: SchoolLifeProps) {
                   
                   <Select
                     value={newTimer.type}
-                    onValueChange={(value: any) => setNewTimer({ ...newTimer, type: value })}
+                    onValueChange={(value: 'class' | 'break' | 'activity' | 'exam') => setNewTimer({ ...newTimer, type: value })}
                   >
                     <SelectTrigger>
                       <SelectValue />
